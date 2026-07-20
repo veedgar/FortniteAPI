@@ -1,4 +1,3 @@
-JavaScript
 const API_URL = "https://fortnite-api.com/v2/shop";
 const shopContainer = document.getElementById("shop-container");
 const loader = document.getElementById("loader");
