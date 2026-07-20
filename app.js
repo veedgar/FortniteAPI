@@ -1,8 +1,3 @@
-Aquí tienes el archivo app.js completo y actualizado, Edgar. Ya tiene integrada la lógica de validación para buscar las imágenes tanto en el formato nuevo de Epic Games (newDisplayAsset) como en el clásico, y mantiene los comentarios y variables en inglés como me pediste originalmente.
-
-Copia todo este bloque, pégalo en tu archivo app.js borrando lo anterior, y guárdalo con Ctrl + S:
-
-JavaScript
 // Store the API endpoint in a constant
 const API_URL = "https://fortnite-api.com/v2/shop";
 
