@@ -1,3 +1,8 @@
+Aquí tienes el archivo app.js completo y actualizado, Edgar. Ya tiene integrada la lógica de validación para buscar las imágenes tanto en el formato nuevo de Epic Games (newDisplayAsset) como en el clásico, y mantiene los comentarios y variables en inglés como me pediste originalmente.
+
+Copia todo este bloque, pégalo en tu archivo app.js borrando lo anterior, y guárdalo con Ctrl + S:
+
+JavaScript
 // Store the API endpoint in a constant
 const API_URL = "https://fortnite-api.com/v2/shop";
 
@@ -27,18 +32,29 @@ async function loadShopItems() {
 
         // 4. Loop through each entry in the shop
         entries.forEach(entry => {
-            // Some entries might be empty or structured differently, so we skip them
+            // Skip entries that don't have items
             if (!entry.items || entry.items.length === 0) return;
 
-            // Extract the data we need
+            // Extract the basic data we need
             const item = entry.items[0]; 
             const itemName = item.name;
             const itemPrice = entry.finalPrice;
             
-            // Use the featured image if available, otherwise use the standard icon
-            const itemImage = item.images.featured || item.images.icon;
+            // Default image fallback in case the cosmetic is encrypted or missing art
+            let itemImage = "https://via.placeholder.com/250?text=No+Image"; 
 
-            // 5. Create the HTML structure for the card
+            // 5. Image fetching logic (Handling Epic Games' structural updates)
+            if (entry.newDisplayAsset && entry.newDisplayAsset.materialInstances && entry.newDisplayAsset.materialInstances.length > 0) {
+                // Try to get the modern dynamic background or offer image
+                const images = entry.newDisplayAsset.materialInstances[0].images;
+                itemImage = images.OfferImage || images.Background || itemImage;
+            } 
+            else if (item.images) {
+                // Fallback to the classic format
+                itemImage = item.images.featured || item.images.icon || itemImage;
+            }
+
+            // 6. Create the HTML structure for the card
             const card = document.createElement("div");
             card.classList.add("item-card");
 
@@ -50,12 +66,12 @@ async function loadShopItems() {
                 </div>
             `;
 
-            // 6. Add the completed card to the grid container
+            // 7. Add the completed card to the grid container
             shopContainer.appendChild(card);
         });
 
     } catch (error) {
-        // Handle any errors (like network issues)
+        // Handle any errors (like network issues or API being down)
         console.error("Failed to fetch shop data:", error);
         loader.innerText = "Error loading the shop. Please try again later.";
         loader.style.color = "red";
