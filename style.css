@@ -1,0 +1,85 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+header {
+    text-align: center;
+    padding: 2rem;
+    background-color: #1f1f1f;
+    border-bottom: 3px solid #00e5ff;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+header p {
+    color: #a0a0a0;
+    margin-top: 0.5rem;
+}
+
+.loader {
+    text-align: center;
+    margin-top: 3rem;
+    font-size: 1.5rem;
+    color: #00e5ff;
+}
+
+/* Grid layout for the shop */
+.shop-grid {
+    display: grid;
+    /* This creates responsive columns that are at least 250px wide */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Individual item card styling */
+.item-card {
+    background-color: #1e1e24;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 229, 255, 0.2);
+}
+
+.item-card img {
+    width: 100%;
+    height: auto;
+    background-color: #2a2a35;
+    display: block;
+}
+
+.item-info {
+    padding: 1rem;
+    text-align: center;
+}
+
+.item-info h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+.price {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #00e5ff;
+}
