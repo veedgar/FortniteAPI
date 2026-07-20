@@ -18,10 +18,23 @@ async function loadShopItems() {
 
         // 3. Convert the response into a JavaScript object
         const result = await response.json();
-        
-        // The Fortnite API stores the shop arrays inside data.entries
-        const entries = result.data.entries;
         console.log("Datos recibidos de la API:", result);
+        
+        // 3.5 Búsqueda segura de cosméticos (Por si Epic Games cambia la estructura)
+        let entries = [];
+        if (result.data.entries) {
+            entries = result.data.entries; // Formato clásico
+        } else {
+            // Si lo dividieron por secciones, unimos 'featured' (destacados) y 'daily' (diarios)
+            const featured = result.data.featured ? result.data.featured.entries : [];
+            const daily = result.data.daily ? result.data.daily.entries : [];
+            entries = [...featured, ...daily];
+        }
+
+        // Si después de buscar por todos lados sigue vacío, lanzamos un error a propósito
+        if (entries.length === 0) {
+            throw new Error("No se encontraron cosméticos en la estructura esperada.");
+        }
 
         // Hide the loading text once data is ready
         loader.style.display = "none";
@@ -69,7 +82,12 @@ async function loadShopItems() {
     } catch (error) {
         // Handle any errors (like network issues or API being down)
         console.error("Failed to fetch shop data:", error);
-        loader.innerText = "Error loading the shop. Please try again later.";
+        
+        // ¡LA MAGIA QUE FALTABA! Volvemos a hacer visible el contenedor
+        loader.style.display = "block"; 
+        
+        // Mostramos exactamente por qué falló en la pantalla
+        loader.innerText = `Error cargando la tienda: ${error.message}`;
         loader.style.color = "red";
     }
 }
