@@ -1,96 +1,113 @@
-// Store the API endpoint in a constant
+JavaScript
 const API_URL = "https://fortnite-api.com/v2/shop";
-
-// Select the HTML elements we need to interact with
 const shopContainer = document.getElementById("shop-container");
 const loader = document.getElementById("loader");
 
-// Async function to fetch and display the data
 async function loadShopItems() {
     try {
-        // 1. Fetch data from the API
         const response = await fetch(API_URL);
         
-        // 2. Check if the response is successful
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
-        // 3. Convert the response into a JavaScript object
         const result = await response.json();
-        console.log("Datos recibidos de la API:", result);
         
-        // 3.5 Búsqueda segura de cosméticos (Por si Epic Games cambia la estructura)
         let entries = [];
         if (result.data.entries) {
-            entries = result.data.entries; // Formato clásico
+            entries = result.data.entries; 
         } else {
-            // Si lo dividieron por secciones, unimos 'featured' (destacados) y 'daily' (diarios)
             const featured = result.data.featured ? result.data.featured.entries : [];
             const daily = result.data.daily ? result.data.daily.entries : [];
             entries = [...featured, ...daily];
         }
 
-        // Si después de buscar por todos lados sigue vacío, lanzamos un error a propósito
         if (entries.length === 0) {
-            throw new Error("No se encontraron cosméticos en la estructura esperada.");
+            throw new Error("No cosmetics found in the expected structure.");
         }
 
-        // Hide the loading text once data is ready
         loader.style.display = "none";
+        
+        shopContainer.classList.remove("shop-grid");
+        shopContainer.innerHTML = ""; 
 
-        // 4. Loop through each entry in the shop
+        const sectionsMap = {};
+        
         entries.forEach(entry => {
-            // Skip entries that don't have items
-            if (!entry.items || entry.items.length === 0) return;
-
-            // Extract the basic data we need
-            const item = entry.items[0]; 
-            const itemName = item.name;
-            const itemPrice = entry.finalPrice;
+            const sectionName = entry.layout?.name || entry.section?.name || "Other Offers";
             
-            // Default image fallback in case the cosmetic is encrypted or missing art
-            let itemImage = "https://via.placeholder.com/250?text=No+Image"; 
-
-            // 5. Image fetching logic (Handling Epic Games' structural updates)
-            if (entry.newDisplayAsset && entry.newDisplayAsset.materialInstances && entry.newDisplayAsset.materialInstances.length > 0) {
-                // Try to get the modern dynamic background or offer image
-                const images = entry.newDisplayAsset.materialInstances[0].images;
-                itemImage = images.OfferImage || images.Background || itemImage;
-            } 
-            else if (item.images) {
-                // Fallback to the classic format
-                itemImage = item.images.featured || item.images.icon || itemImage;
+            if (!sectionsMap[sectionName]) {
+                sectionsMap[sectionName] = [];
             }
-
-            // 6. Create the HTML structure for the card
-            const card = document.createElement("div");
-            card.classList.add("item-card");
-
-            card.innerHTML = `
-                <img src="${itemImage}" alt="${itemName} Outfit">
-                <div class="item-info">
-                    <h3>${itemName}</h3>
-                    <p class="price">${itemPrice} V-Bucks</p>
-                </div>
-            `;
-
-            // 7. Add the completed card to the grid container
-            shopContainer.appendChild(card);
+            sectionsMap[sectionName].push(entry);
         });
 
+        const sortedSections = Object.keys(sectionsMap).sort((a, b) => {
+            if (a.toUpperCase() === "JAM TRACKS") return 1;
+            if (b.toUpperCase() === "JAM TRACKS") return -1;
+            return 0;
+        });
+
+        for (const sectionName of sortedSections) {
+            const sectionEntries = sectionsMap[sectionName];
+            
+            const title = document.createElement("h2");
+            title.innerText = sectionName.toUpperCase();
+            title.style.marginTop = "3rem";
+            title.style.marginBottom = "1rem";
+            title.style.color = "#00e5ff"; 
+            title.style.borderBottom = "2px solid #1f1f1f";
+            title.style.paddingBottom = "0.5rem";
+            title.style.letterSpacing = "1px";
+            
+            shopContainer.appendChild(title);
+
+            const sectionGrid = document.createElement("div");
+            sectionGrid.classList.add("shop-grid"); 
+
+            sectionEntries.forEach(entry => {
+                const itemsArray = entry.brItems || entry.items || entry.cars || entry.instruments || entry.tracks;
+                if (!itemsArray || itemsArray.length === 0) return;
+
+                const item = itemsArray[0]; 
+                
+                const itemName = item.name || item.title || entry.bundle?.name || "Unknown";
+                const itemPrice = entry.finalPrice;
+                
+                let itemImage = "https://via.placeholder.com/250?text=No+Image"; 
+
+                if (entry.newDisplayAsset && entry.newDisplayAsset.materialInstances && entry.newDisplayAsset.materialInstances.length > 0) {
+                    const images = entry.newDisplayAsset.materialInstances[0].images;
+                    itemImage = images.OfferImage || images.Background || itemImage;
+                } else if (item.images) {
+                    itemImage = item.images.featured || item.images.icon || item.images.small || itemImage;
+                } else if (item.albumArt) {
+                    itemImage = item.albumArt;
+                }
+
+                const card = document.createElement("div");
+                card.classList.add("item-card");
+
+                card.innerHTML = `
+                    <img src="${itemImage}" alt="${itemName}">
+                    <div class="item-info">
+                        <h3>${itemName}</h3>
+                        <p class="price">${itemPrice} V-Bucks</p>
+                    </div>
+                `;
+
+                sectionGrid.appendChild(card);
+            });
+
+            shopContainer.appendChild(sectionGrid);
+        }
+
     } catch (error) {
-        // Handle any errors (like network issues or API being down)
         console.error("Failed to fetch shop data:", error);
-        
-        // ¡LA MAGIA QUE FALTABA! Volvemos a hacer visible el contenedor
         loader.style.display = "block"; 
-        
-        // Mostramos exactamente por qué falló en la pantalla
-        loader.innerText = `Error cargando la tienda: ${error.message}`;
+        loader.innerText = `Error loading the shop: ${error.message}`;
         loader.style.color = "red";
     }
 }
 
-// Call the function to run as soon as the script loads
 loadShopItems();
