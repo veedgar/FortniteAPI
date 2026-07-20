@@ -21,6 +21,7 @@ async function loadShopItems() {
         
         // The Fortnite API stores the shop arrays inside data.entries
         const entries = result.data.entries;
+        console.log("Datos recibidos de la API:", result);
 
         // Hide the loading text once data is ready
         loader.style.display = "none";
